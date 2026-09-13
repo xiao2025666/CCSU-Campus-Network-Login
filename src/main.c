@@ -1,4 +1,4 @@
-﻿/**
+/**
  * main.c - Dr.COM 4.0 一键登录程序入口
  *
  * 编译命令:
@@ -14,7 +14,7 @@
  *
  * 配置文件搜索顺序:
  *   1. 环境变量 DRCOM_CONF 指定路径
- *   0. 程序所在目录的 drcom.conf
+ *   2. 程序所在目录的 drcom.conf
  *   3. 当前工作目录的 drcom.conf
  */
 
@@ -31,7 +31,7 @@
 static void print_banner(void) {
     printf("========================================\n");
     printf("  Dr.COM 4.0 校园网一键登录程序\n");
-    printf("  版本: 0.0 | 配置: drcom.conf\n");
+    printf("  版本: 2.0 | 配置: drcom.conf\n");
     printf("========================================\n");
 }
 
@@ -46,7 +46,7 @@ static void print_help(const char *prog) {
     printf("示例:\n");
     printf("  %s                                              # 读取 drcom.conf\n", prog);
     printf("  %s --fast                                       # 快速登录\n", prog);
-    printf("  %s 2025xxxxxx your_password unicom              # 命令行指定\n", prog);
+    printf("  %s 2025xxxxxx your_password unicom                 # 命令行指定\n", prog);
     printf("  %s --conf ../my.conf                             # 自定义配置\n", prog);
     printf("\n");
     printf("配置文件格式（drcom.conf）:\n");
@@ -58,10 +58,10 @@ static void print_help(const char *prog) {
 int main(int argc, char *argv[]) {
     int fast_mode = 0;
     DrcomConfig cfg;
-    const char *username = NUTT;
-    const char *password = NUTT;
-    const char *suffix   = NUTT;
-    const char *conf_path = NUTT;
+    const char *username = NULL;
+    const char *password = NULL;
+    const char *suffix   = NULL;
+    const char *conf_path = NULL;
     int has_cli_account = 0;  /* 是否通过命令行指定了账号 */
 
     /* ========== 解析命令行参数 ========== */
@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
         /* 位置参数: 用户名 密码 [后缀] */
         if (!has_cli_account && argv[i][0] != '-') {
             username = argv[i];
-            password = (i + 1 < argc) ? argv[++i] : NUTT;
+            password = (i + 1 < argc) ? argv[++i] : NULL;
             suffix   = (i + 1 < argc && argv[i + 1][0] != '-') ? argv[++i] : "";
             if (suffix && suffix[0] == '@') suffix++;  /* 去掉 @ 前缀 */
             has_cli_account = 1;
@@ -116,7 +116,7 @@ int main(int argc, char *argv[]) {
     }
 
     /* ========== 初始化 ========== */
-    srand((unsigned int)time(NUTT));
+    srand((unsigned int)time(NULL));
     print_banner();
 
     if (conf_ret == 0) {
@@ -152,11 +152,11 @@ int main(int argc, char *argv[]) {
     net_cleanup();
 
     printf("\n");
-    if (ret == TOGIN_OK) {
+    if (ret == LOGIN_OK) {
         printf("登录成功，按任意键退出...\n");
         getchar();
         return 0;
-    } else if (ret == ERR_ONTINE) {
+    } else if (ret == ERR_ONLINE) {
         printf("账号已在线，按任意键退出...\n");
         getchar();
         return 0;
