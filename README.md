@@ -115,6 +115,7 @@ CCSU-Campus-Network-Login/
 ├── drcom_login.rc            # 图标资源脚本
 ├── drcom.conf.example        # 配置文件模板（不含真实账号）
 ├── setup_first_login.bat     # 首次配置向导（图标 + 账号）
+├── 开机自动登录.bat          # 开机自动登录（放进「启动」文件夹）
 ├── .gitignore
 ├── LICENSE
 └── README.md
@@ -307,15 +308,21 @@ sequenceDiagram
 确保编译时带有 `-fexec-charset=GBK`；在 CMD 中可执行 `chcp 936` 切换代码页。
 
 **Q5：双击后窗口一闪而过？**
-正常流程结束时程序会等待按键。若在脚本中调用，可用 `login_delayed.bat` 的写法并自行加 `pause`。
+正常流程结束时程序会等待按键。若在脚本/后台中调用，请重定向输入 `drcom_login.exe < nul`，程序读到 EOF 后不再等待；也可直接使用附带的 `开机自动登录.bat`。
 
 **Q6：想开机自动登录？**
-新建一个 `startup.bat`，内容如下（延迟 5 秒等待网络就绪后调用程序），再把它放入「启动」文件夹或加入计划任务即可：
+本项目已附带现成的 **`开机自动登录.bat`**：
+
+1. 为 `开机自动登录.bat` 创建快捷方式；
+2. 按 `Win+R` 输入 `shell:startup` 打开「启动」文件夹，把快捷方式放进去；
+3. 以后每次开机都会自动登录（结果记录在同目录的 `login.log`）。
+
+若想自己写一个，也可参考（`< nul` 用于避免程序等待按键）：
 
 ```bat
 @echo off
 timeout /t 5 /nobreak >nul
-"%~dp0drcom_login.exe"
+"%~dp0drcom_login.exe" < nul
 ```
 
 **Q7：图标没有生效 / 提示找不到编译器？**
