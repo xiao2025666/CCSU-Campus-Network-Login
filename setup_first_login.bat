@@ -84,6 +84,9 @@ set "GCC_EXE=%TOOLCHAIN%\bin\gcc.exe"
 set "WINDRES_EXE=%TOOLCHAIN%\bin\windres.exe"
 
 :compile_icon
+REM gcc 通过 PATH 查找 as.exe / ld.exe，必须把工具链 bin 加进去（内置工具链尤其需要）
+if exist "%TOOLCHAIN%\bin" set "PATH=%TOOLCHAIN%\bin;%PATH%"
+
 echo   正在编译图标资源...
 if not exist "drcom_login.rc" > "drcom_login.rc" echo IDI_ICON1 ICON "drcom_login.ico"
 "%WINDRES_EXE%" "drcom_login.rc" -O coff -o "drcom_login.res"
