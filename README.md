@@ -1,93 +1,356 @@
-# CCSU 校园网一键登录 · 免编译版
+# CCSU-Campus-Network-Login
 
-> 长沙学院校园网 Dr.COM 4.0 一键登录 —— **开箱即用，无需编译环境**
+> 长沙学院（CCSU）校园网 Dr.COM 4.0 一键登录程序（Windows / C 语言）
 
-本分支提供**已编译好的成品程序**，下载解压就能用。
-源码、编译方法与完整文档见 [`main` 分支](https://github.com/xiao2025666/CCSU-Campus-Network-Login)。
+一个轻量、无依赖的校园网自动登录工具。基于对 Dr.COM 4.0 认证门户的协议分析，使用纯 C 语言 + Winsock 实现 HTTP 认证流程，编译后为单个 `exe`，双击即可联网。
 
 ---
 
-## 🚀 使用方法
+## ✨ 功能特性
 
-### 第一步：下载解压
+- 🚀 **一键登录**：双击运行，自动读取配置完成认证，无需打开浏览器。
+- 🔐 **账号外置**：账号密码保存在 `drcom.conf`，不硬编码进程序，方便分享源码。
+- 🧩 **模块化设计**：网络、协议、配置、工具函数分层解耦，便于二次开发。
+- ⚙️ **灵活调用**：支持命令行参数、环境变量、配置文件三种方式指定账号。
+- 🖥️ **原生控制台**：UTF-8 源码，中文提示在 CMD 下正常显示。
+- 🎨 **首次配置向导**：`setup_first_login.bat` 一键完成图标设置 + 账号写入。
+- 📦 **零第三方依赖**：仅使用 Windows 自带 Winsock2，编译产物可直接分发。
+- ⚡ **免编译发行版**：另有已编译好的成品分支，零环境要求、双击即用（见「免编译发行版」章节）。
 
-1. 点击本页上方 `Code` → **`Download ZIP`**；
-2. 解压到任意文件夹（建议路径不含空格，例如 `D:\drcom`）。
+---
 
-### 第二步：首次配置
+## 🖥️ 环境要求
 
-双击运行 **`setup_first_login.bat`**，按提示输入：
-
-| 提示 | 输入 |
+| 项目 | 要求 |
 | --- | --- |
-| 学号 / 账号 | 例如 `2025xxxxxx` |
-| 密码 | 校园网密码（**输入时不显示**，正常现象） |
-| 运营商后缀 | `unicom`(联通) / `dx`(电信) / `yd`(移动)，直接回车 = `unicom` |
+| 操作系统 | Windows 7 / 10 / 11（x86 / x64） |
+| 编译器 | MinGW-w64（`gcc`）或 MSVC（`cl`） |
+| 构建工具 | `mingw32-make` / `make`（可选） |
+| 网络 | 已连接到校园网（未认证状态） |
 
-完成后会自动：
+> **只想使用的用户无需安装任何编译器** —— 直接使用 [`release` 分支](#-免编译发行版release-分支)（或 GitHub Releases 中的成品）即可。
+> `main` 分支面向开发者，编译需要 MinGW-w64 或 MSVC。
 
-- 生成配置文件 `drcom.conf`；
-- 在桌面创建带图标的 **「校园网一键登录」** 快捷方式。
+---
 
-### 第三步：开始使用
+## 🚀 快速开始
 
-双击桌面的 **「校园网一键登录」**，即可一键联网。
+### 方式零：免编译成品（推荐所有人）⭐
 
-### 可选：开机自动登录
+**不需要任何编译环境**：
 
-1. 右键 `开机自动登录.bat` → 发送到 → 桌面快捷方式；
+1. 切换到 [`release` 分支](https://github.com/xiao2025666/CCSU-Campus-Network-Login/tree/release)（或下载该分支的 ZIP）。
+2. 双击运行 **`setup_first_login.bat`**。
+3. 按提示输入 **学号 / 密码 / 运营商后缀**（密码输入时不显示）。
+4. 完成！桌面会生成带图标的「校园网一键登录」快捷方式，双击即可联网。
+
+> `release` 分支中已带有编译好的 `drcom_login.exe`，脚本会**自动跳过编译**，无需 gcc / windres。
+
+### 方式一：一键配置（源码用户，main 分支）
+
+1. 下载或克隆本仓库到本地（路径尽量不要含空格）。
+2. 双击运行 **`setup_first_login.bat`**。
+3. 按提示依次输入：
+   - **学号 / 账号**：例如 `2025xxxxxx`
+   - **密码**：你的校园网密码
+   - **运营商后缀**：`unicom`（联通）/ `dx`（电信）/ `yd`（移动），直接回车默认 `unicom`
+4. 脚本会自动：
+   - 若 `drcom_login.exe` 已存在 → **直接跳过编译**；
+   - 否则依次尝试：**内置精简工具链** → 系统已装的 `gcc` → 从 Releases 下载（约 26 MB）；
+   - 在桌面创建带图标的「校园网一键登录」快捷方式；
+   - 生成配置文件 `drcom.conf`（UTF-8 无 BOM）。
+5. 以后双击桌面快捷方式或 `drcom_login.exe` 即可一键登录。
+
+> 需要强制重新编译（例如改过源码）时，运行：`setup_first_login.bat --rebuild`
+
+### 方式二：手动配置
+
+1. 复制模板并重命名：
+
+   ```bat
+   copy drcom.conf.example drcom.conf
+   ```
+
+2. 用记事本编辑 `drcom.conf`，填写 `username` / `password` / `suffix`。
+3. 编译并运行（见下文「编译」）。
+
+---
+
+## 📦 免编译发行版（`release` 分支）
+
+为方便**没有编译环境**的用户，把「开箱即用」的成品放在单独的分支上：
+
+| 分支 | 内容 | 面向 |
+| --- | --- | --- |
+| `main` | 源码（`src/`、`include/`、`Makefile`、README…） | 开发者 |
+| `release` | 预编译的 `drcom_login.exe`（已含图标）+ 配置脚本 + 图标 | 普通用户 |
+
+使用步骤：
+
+1. 打开 [release 分支](https://github.com/xiao2025666/CCSU-Campus-Network-Login/tree/release) → `Code` → `Download ZIP`；
+2. 解压后双击 `setup_first_login.bat`，按提示输入账号密码即可。
+
+> 该分支无需编译器：脚本检测到 `drcom_login.exe` 已存在，会直接跳到「创建快捷方式 + 生成配置」。
+
+---
+
+## 📁 目录结构
+
+```text
+CCSU-Campus-Network-Login/
+├── include/                  # 头文件
+│   ├── config.h              # 全局常量（服务器地址、端口、缓冲区大小）
+│   ├── config_reader.h       # 配置文件读取模块声明
+│   ├── login.h               # 登录协议模块声明
+│   ├── network.h             # 网络通信模块声明
+│   └── utils.h               # 工具函数声明
+├── src/                      # 源文件
+│   ├── main.c                # 程序入口、命令行解析
+│   ├── config_reader.c       # drcom.conf 解析与自动搜索
+│   ├── login.c               # Dr.COM 认证协议实现（4 步流程）
+│   ├── network.c             # HTTP GET 客户端、本机 IP 探测
+│   └── utils.c               # URL 编码、Base64、UTF-8/GBK 转换
+├── Makefile                  # 构建脚本（支持 MinGW / MSVC）
+├── drcom_login.ico           # 程序图标
+├── drcom_login.rc            # 图标资源脚本
+├── drcom.conf.example        # 配置文件模板（不含真实账号）
+├── setup_first_login.bat     # 首次配置向导（图标 + 账号）
+├── 开机自动登录.bat          # 开机自动登录（放进「启动」文件夹）
+├── .gitignore
+├── LICENSE
+└── README.md
+```
+
+---
+
+## 🔨 编译
+
+> 只想使用程序？可直接用上面的「免编译发行版」，跳过本章节。
+
+### 使用内置精简工具链（无需在系统安装 MinGW）
+
+本目录附带一份**裁剪版 MinGW-w64**：`mingw64-mini-非完整编译器/`（约 114 MB）。
+
+> ⚠️ 它**不是完整编译器**，只保留了编译本项目必需的组件（`gcc` / `windres` / `as` / `ld` + 必需的头文件与库），
+> 不能用于编译其它 C/C++ 项目。
+
+```bat
+mingw64-mini-非完整编译器\bin\windres.exe drcom_login.rc -O coff -o drcom_login.res
+mingw64-mini-非完整编译器\bin\gcc.exe -O2 -Wall -Iinclude src\config_reader.c src\login.c src\main.c src\network.c src\utils.c drcom_login.res -o drcom_login.exe -lws2_32 -finput-charset=UTF-8 -fexec-charset=GBK
+```
+
+> 该目录体积较大，**未纳入 git**（见 `.gitignore`）。需要时请从
+> [GitHub Releases](https://github.com/xiao2025666/CCSU-Campus-Network-Login/releases)
+> 下载 `mingw64-mini.zip`（约 26 MB），解压到本目录即可。
+
+### MinGW（推荐）
+
+```bat
+make
+```
+
+或手动单条命令编译：
+
+```bat
+gcc -O2 -Wall -Iinclude src\config_reader.c src\login.c src\main.c src\network.c src\utils.c -o drcom_login.exe -lws2_32 -finput-charset=UTF-8 -fexec-charset=GBK
+```
+
+> `-finput-charset=UTF-8 -fexec-charset=GBK` 用于保证源码中的中文在 CMD 下正确显示。
+
+### MSVC
+
+```bat
+make MSVC=1
+```
+
+或：
+
+```bat
+cl /O2 /W3 /Iinclude src\*.c /Fe:drcom_login.exe ws2_32.lib
+```
+
+### 其他 Make 目标
+
+| 命令 | 说明 |
+| --- | --- |
+| `make` | 编译（MinGW） |
+| `make MSVC=1` | 使用 MSVC 编译 |
+| `make DEBUG=1` | 编译调试版（`-O0 -g -DDEBUG`） |
+| `make run` | 编译并运行 |
+| `make clean` | 清理 `build/` 目录 |
+| `make help` | 显示帮助 |
+
+### 带图标编译
+
+```bat
+windres drcom_login.rc -O coff -o drcom_login.res
+gcc -O2 -Wall -Iinclude src\*.c drcom_login.res -o drcom_login.exe -lws2_32 -finput-charset=UTF-8 -fexec-charset=GBK
+```
+
+---
+
+## ⚙️ 配置文件 `drcom.conf`
+
+INI 风格，支持 `#` 与 `;` 注释、空行，等号两侧空格可选。
+
+```ini
+; ---------- 账号信息（必填） ----------
+username = 2025xxxxxx
+password = your_password
+suffix   = unicom
+
+; ---------- 服务器配置（可选，一般无需修改） ----------
+server        = 10.0.100.3
+port_http     = 80
+port_portal   = 801
+ac_name       = ME60-CSDX
+js_version    = 4.2.1
+terminal_type = 1
+```
+
+**配置文件搜索顺序**（`config_auto_load`）：
+
+1. 环境变量 `DRCOM_CONF` 指定的路径；
+2. `drcom_login.exe` 所在目录下的 `drcom.conf`；
+3. 当前工作目录下的 `drcom.conf`。
+
+> ⚠️ `drcom.conf` 含**明文密码**，已被 `.gitignore` 忽略，请勿上传或分享。
+
+---
+
+## 💻 命令行用法
+
+```bat
+drcom_login.exe                                从 drcom.conf 读取账号登录
+drcom_login.exe --fast                         快速模式（单步直达）
+drcom_login.exe <用户名> <密码> [后缀]           使用指定账号登录
+drcom_login.exe --conf <路径>                  指定配置文件
+drcom_login.exe --help                         显示帮助
+```
+
+**示例：**
+
+```bat
+rem 读取 drcom.conf 登录
+drcom_login.exe
+
+rem 快速登录
+drcom_login.exe --fast
+
+rem 命令行直接指定账号
+drcom_login.exe 2025xxxxxx your_password unicom
+
+rem 使用自定义配置文件
+drcom_login.exe --conf D:\my\drcom.conf
+```
+
+**返回码：**
+
+| 返回码 | 含义 |
+| --- | --- |
+| `0` | 登录成功（或账号已在线） |
+| `1` | 登录失败（认证失败 / 网络错误 / 缺少配置） |
+
+---
+
+## 🔍 工作原理
+
+程序基于对 Dr.COM 4.0 认证门户的流程分析，完整登录共 **4 步**（`--fast` 模式跳过前置检查直接登录）：
+
+```mermaid
+sequenceDiagram
+    participant C as drcom_login.exe
+    participant S as 认证服务器
+    C->>C: 步骤 0: 通过 UDP 连接探测本机 IP
+    C->>S: 步骤 1: GET /a79.htm (port 80) 获取门户页面
+    S-->>C: 返回页面（检测是否已登录）
+    C->>S: 步骤 2: GET /eportal/portal/page/loadConfig (port 801)
+    S-->>C: 返回门户配置（wlan_user_ip 为 Base64）
+    C->>S: 步骤 3: GET /drcom/chkstatus (port 80) 检查登录状态
+    S-->>C: 返回状态
+    C->>S: 步骤 4: GET /eportal/portal/login (port 801) 执行登录
+    S-->>C: 返回 result 结果码
+    C->>C: 解析 result/msg 判断是否成功
+```
+
+**结果判定（`parse_login_result`）：**
+
+| `result` / `ret_code` | 含义 |
+| --- | --- |
+| `result = 1` | 登录成功 |
+| `result = 2` 或 `ret_code = 2` | 账号已在线 |
+| `result = 0` 且非上述 | 认证失败（账号 / 密码 / 后缀错误） |
+
+**关键实现点：**
+
+- 账号格式化为 `,0,用户名@后缀`（无后缀时为 `,0,用户名`），再进行 URL 编码；
+- `loadConfig` 请求中的 `wlan_user_ip` 需先 Base64 再 URL 编码；
+- 响应可能被 `dr1003({...})` 回调包裹，解析时会自动剥离外层；
+- 兼容 `Transfer-Encoding: chunked` 响应体；
+- 服务器返回 UTF-8，输出前统一转换为 GBK 以适配 CMD。
+
+---
+
+## ❓ 常见问题（FAQ）
+
+**Q1：提示「未找到配置文件 drcom.conf」？**
+运行 `setup_first_login.bat` 生成，或复制 `drcom.conf.example` 为 `drcom.conf` 后填写。
+
+**Q2：提示「认证失败，请检查账号/密码/后缀」？**
+- 检查密码是否正确；
+- 检查 `suffix` 是否与运营商匹配（`unicom` / `dx` / `yd`）；
+- 确认已连接校园网 Wi-Fi / 网线。
+
+**Q3：提示「无法获取本机 IP」？**
+请确认已连接校园网。程序通过 UDP 连接到认证服务器来确定出口网卡，未联网时会失败。
+
+**Q4：中文显示乱码？**
+确保编译时带有 `-fexec-charset=GBK`；在 CMD 中可执行 `chcp 936` 切换代码页。
+
+**Q5：双击后窗口一闪而过？**
+正常流程结束时程序会等待按键。若在脚本/后台中调用，请重定向输入 `drcom_login.exe < nul`，程序读到 EOF 后不再等待；也可直接使用附带的 `开机自动登录.bat`。
+
+**Q6：想开机自动登录？**
+本项目已附带现成的 **`开机自动登录.bat`**：
+
+1. 为 `开机自动登录.bat` 创建快捷方式；
 2. 按 `Win+R` 输入 `shell:startup` 打开「启动」文件夹，把快捷方式放进去；
-3. 以后每次开机自动登录（结果记录在同目录 `login.log`）。
+3. 以后每次开机都会自动登录（结果记录在同目录的 `login.log`）。
+
+若想自己写一个，也可参考（`< nul` 用于避免程序等待按键）：
+
+```bat
+@echo off
+timeout /t 5 /nobreak >nul
+"%~dp0drcom_login.exe" < nul
+```
+
+**Q7：图标没有生效 / 提示找不到编译器？**
+- 使用 [`release` 分支](#-免编译发行版release-分支)时，程序已带图标，无需编译；
+- `main` 分支下嵌入图标需要编译器：脚本会优先使用**内置精简工具链**，其次用系统 `gcc`，都没有时才询问是否从 Releases 下载；
+- 即使全部跳过，脚本仍会创建**带图标的桌面快捷方式**，日常使用不受影响。
 
 ---
 
-## 📁 文件说明
+## 🔒 安全与隐私提示
 
-| 文件 | 用途 |
-| --- | --- |
-| `setup_first_login.bat` | **主要入口**：首次配置（输入账号密码 + 创建快捷方式） |
-| `drcom_login.exe` | 登录程序（已编译、已内嵌图标） |
-| `开机自动登录.bat` | 开机自动登录（可选） |
-| `drcom.conf.example` | 配置模板（脚本会自动生成 `drcom.conf`） |
-| `drcom_login.ico` | 程序图标 |
-
----
-
-## ❓ 常见问题
-
-**Q：双击 `setup_first_login.bat` 没反应 / 一闪而过？**
-请确认是在**解压后的文件夹**里双击，而不是直接双击压缩包内的文件。
-
-**Q：提示找不到配置文件 `drcom.conf`？**
-运行 `setup_first_login.bat` 即可生成。
-
-**Q：提示「认证失败，请检查账号/密码/后缀」？**
-检查密码、运营商后缀（`unicom`/`dx`/`yd`）是否正确，并确认已连接校园网 Wi-Fi / 网线。
-
-**Q：想换账号或改密码？**
-重新运行 `setup_first_login.bat` 覆盖生成即可。
-
-**Q：桌面快捷方式图标不对？**
-删除旧快捷方式，重新运行 `setup_first_login.bat`。
-
-**Q：想要源码 / 自己编译 / 更多功能？**
-见 [`main` 分支](https://github.com/xiao2025666/CCSU-Campus-Network-Login)。
-
----
-
-## 🔒 安全提示
-
-- `drcom.conf` 保存**明文账号密码**，请勿分享或上传到公开仓库。
-- 程序仅在本地向校园网认证服务器发起认证请求。
+- `drcom.conf` 保存**明文账号密码**，已加入 `.gitignore`，**请勿提交到任何公开仓库**；
+- 分享本项目或排查问题时，请先删除 / 清空 `drcom.conf`；
+- 本程序仅在本地进行 HTTP 认证请求，不会将账号信息发送到除校园网认证服务器以外的任何地方。
 
 ---
 
 ## ⚠️ 免责声明
 
-仅供长沙学院在校师生个人正常连接校园网使用，请遵守学校网络管理规定；使用本程序产生的一切后果由使用者自行承担。
+本项目仅供**长沙学院在校师生学习交流**使用，用于个人正常连接校园网。
+
+- 请勿将本程序用于任何商业用途或非法用途；
+- 使用本程序所产生的一切后果由使用者自行承担；
+- 请遵守学校网络管理规定，合理、合规地使用校园网资源；
+- 认证接口与协议可能随学校升级而变更，届时程序可能失效。
 
 ---
 
 ## 📄 许可证
 
-[BSD-3-Clause](LICENSE) · 完整文档见 [`main` 分支](https://github.com/xiao2025666/CCSU-Campus-Network-Login)
+本项目基于 **BSD-3-Clause License** 开源，详见 [LICENSE](LICENSE)。
