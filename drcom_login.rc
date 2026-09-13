@@ -1,0 +1,9 @@
+/* drcom_login.rc - 程序图标资源定义
+ *
+ * 由 setup_first_login.bat 或以下命令编译:
+ *   windres drcom_login.rc -O coff -o drcom_login.res
+ * 随后链接进 drcom_login.exe:
+ *   gcc ... drcom_login.res -o drcom_login.exe -lws2_32
+ */
+
+IDI_ICON1 ICON "drcom_login.ico"
