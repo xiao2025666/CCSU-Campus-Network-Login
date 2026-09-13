@@ -12,9 +12,10 @@
 - 🔐 **账号外置**：账号密码保存在 `drcom.conf`，不硬编码进程序，方便分享源码。
 - 🧩 **模块化设计**：网络、协议、配置、工具函数分层解耦，便于二次开发。
 - ⚙️ **灵活调用**：支持命令行参数、环境变量、配置文件三种方式指定账号。
-- 🖥️ **原生控制台**：UTF-8 源码 + GBK 输出，中文提示在 CMD 下正常显示。
+- 🖥️ **原生控制台**：UTF-8 源码，中文提示在 CMD 下正常显示。
 - 🎨 **首次配置向导**：`setup_first_login.bat` 一键完成图标设置 + 账号写入。
 - 📦 **零第三方依赖**：仅使用 Windows 自带 Winsock2，编译产物可直接分发。
+- ⚡ **免编译发行版**：另有已编译好的成品分支，零环境要求、双击即用（见「免编译发行版」章节）。
 
 ---
 
@@ -27,13 +28,25 @@
 | 构建工具 | `mingw32-make` / `make`（可选） |
 | 网络 | 已连接到校园网（未认证状态） |
 
-> 只需要运行程序的用户**无需**安装编译器——直接下载 Release 中的 `drcom_login.exe` 即可（如提供）。
+> **只想使用的用户无需安装任何编译器** —— 直接使用 [`release` 分支](#-免编译发行版release-分支)（或 GitHub Releases 中的成品）即可。
+> `main` 分支面向开发者，编译需要 MinGW-w64 或 MSVC。
 
 ---
 
 ## 🚀 快速开始
 
-### 方式一：一键配置（推荐新手）
+### 方式零：免编译成品（推荐所有人）⭐
+
+**不需要任何编译环境**：
+
+1. 切换到 [`release` 分支](https://github.com/xiao2025666/CCSU-Campus-Network-Login/tree/release)（或下载该分支的 ZIP）。
+2. 双击运行 **`setup_first_login.bat`**。
+3. 按提示输入 **学号 / 密码 / 运营商后缀**（密码输入时不显示）。
+4. 完成！桌面会生成带图标的「校园网一键登录」快捷方式，双击即可联网。
+
+> `release` 分支中已带有编译好的 `drcom_login.exe`，脚本会**自动跳过编译**，无需 gcc / windres。
+
+### 方式一：一键配置（源码用户，main 分支）
 
 1. 下载或克隆本仓库到本地（路径尽量不要含空格）。
 2. 双击运行 **`setup_first_login.bat`**。
@@ -42,10 +55,13 @@
    - **密码**：你的校园网密码
    - **运营商后缀**：`unicom`（联通）/ `dx`（电信）/ `yd`（移动），直接回车默认 `unicom`
 4. 脚本会自动：
-   - 将 `drcom_login.ico` 图标嵌入 `drcom_login.exe`（需已安装 MinGW）；
+   - 若 `drcom_login.exe` 已存在 → **直接跳过编译**；
+   - 否则依次尝试：**内置精简工具链** → 系统已装的 `gcc` → 从 Releases 下载（约 26 MB）；
    - 在桌面创建带图标的「校园网一键登录」快捷方式；
-   - 生成配置文件 `drcom.conf`。
+   - 生成配置文件 `drcom.conf`（UTF-8 无 BOM）。
 5. 以后双击桌面快捷方式或 `drcom_login.exe` 即可一键登录。
+
+> 需要强制重新编译（例如改过源码）时，运行：`setup_first_login.bat --rebuild`
 
 ### 方式二：手动配置
 
@@ -57,6 +73,24 @@
 
 2. 用记事本编辑 `drcom.conf`，填写 `username` / `password` / `suffix`。
 3. 编译并运行（见下文「编译」）。
+
+---
+
+## 📦 免编译发行版（`release` 分支）
+
+为方便**没有编译环境**的用户，把「开箱即用」的成品放在单独的分支上：
+
+| 分支 | 内容 | 面向 |
+| --- | --- | --- |
+| `main` | 源码（`src/`、`include/`、`Makefile`、README…） | 开发者 |
+| `release` | 预编译的 `drcom_login.exe`（已含图标）+ 配置脚本 + 图标 | 普通用户 |
+
+使用步骤：
+
+1. 打开 [release 分支](https://github.com/xiao2025666/CCSU-Campus-Network-Login/tree/release) → `Code` → `Download ZIP`；
+2. 解压后双击 `setup_first_login.bat`，按提示输入账号密码即可。
+
+> 该分支无需编译器：脚本检测到 `drcom_login.exe` 已存在，会直接跳到「创建快捷方式 + 生成配置」。
 
 ---
 
@@ -89,6 +123,24 @@ CCSU-Campus-Network-Login/
 ---
 
 ## 🔨 编译
+
+> 只想使用程序？可直接用上面的「免编译发行版」，跳过本章节。
+
+### 使用内置精简工具链（无需在系统安装 MinGW）
+
+本目录附带一份**裁剪版 MinGW-w64**：`mingw64-mini-非完整编译器/`（约 114 MB）。
+
+> ⚠️ 它**不是完整编译器**，只保留了编译本项目必需的组件（`gcc` / `windres` / `as` / `ld` + 必需的头文件与库），
+> 不能用于编译其它 C/C++ 项目。
+
+```bat
+mingw64-mini-非完整编译器\bin\windres.exe drcom_login.rc -O coff -o drcom_login.res
+mingw64-mini-非完整编译器\bin\gcc.exe -O2 -Wall -Iinclude src\config_reader.c src\login.c src\main.c src\network.c src\utils.c drcom_login.res -o drcom_login.exe -lws2_32 -finput-charset=UTF-8 -fexec-charset=GBK
+```
+
+> 该目录体积较大，**未纳入 git**（见 `.gitignore`）。需要时请从
+> [GitHub Releases](https://github.com/xiao2025666/CCSU-Campus-Network-Login/releases)
+> 下载 `mingw64-mini.zip`（约 26 MB），解压到本目录即可。
 
 ### MinGW（推荐）
 
@@ -266,8 +318,10 @@ timeout /t 5 /nobreak >nul
 "%~dp0drcom_login.exe"
 ```
 
-**Q7：图标没有生效？**
-嵌入图标需要 MinGW（`windres` + `gcc`）。若未安装，脚本会退化为仅设置桌面快捷方式图标。
+**Q7：图标没有生效 / 提示找不到编译器？**
+- 使用 [`release` 分支](#-免编译发行版release-分支)时，程序已带图标，无需编译；
+- `main` 分支下嵌入图标需要编译器：脚本会优先使用**内置精简工具链**，其次用系统 `gcc`，都没有时才询问是否从 Releases 下载；
+- 即使全部跳过，脚本仍会创建**带图标的桌面快捷方式**，日常使用不受影响。
 
 ---
 

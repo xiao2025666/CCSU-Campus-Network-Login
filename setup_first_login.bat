@@ -7,8 +7,8 @@ cd /d "%~dp0"
 set "ICON=%~dp0drcom_login.ico"
 set "EXE=%~dp0drcom_login.exe"
 set "TOOLCHAIN=%~dp0mingw64-mini-非完整编译器"
-set "ZIP=%~dp0mingw64-mini-非完整编译器.zip"
-set "RELEASE_URL=https://github.com/xiao2025666/CCSU-Campus-Network-Login/releases/latest/download/mingw64-mini-非完整编译器.zip"
+set "ZIP=%~dp0mingw64-mini.zip"
+set "RELEASE_URL=https://github.com/xiao2025666/CCSU-Campus-Network-Login/releases/latest/download/mingw64-mini.zip"
 
 echo ================================================================
 echo    Dr.COM 4.0 校园网一键登录 - 首次配置向导
@@ -29,6 +29,13 @@ echo.
 if not exist "%ICON%" (
     echo   [警告] 未找到图标文件 drcom_login.ico，跳过图标设置。
     goto :step2
+)
+
+REM 已提供编译好的 exe（免编译发行版）时直接跳过编译，无需任何编译环境。
+REM 需要强制重新编译时运行: setup_first_login.bat --rebuild
+if /i not "%~1"=="--rebuild" if exist "%EXE%" (
+    echo   [跳过] 已存在编译好的 drcom_login.exe，无需编译。
+    goto :shortcut
 )
 
 if not exist "%TOOLCHAIN%\bin\gcc.exe" goto :detect_system
@@ -54,7 +61,7 @@ goto :compile_icon
 echo   [提示] 未检测到编译器 gcc / windres。
 echo          嵌入图标需要编译器；也可跳过，仅设置桌面快捷方式图标。
 echo.
-echo   是否从 GitHub Releases 下载精简工具链 (约 45 MB)? [Y/n，直接回车 = 下载]
+echo   是否从 GitHub Releases 下载精简工具链 (约 26 MB)? [Y/n，直接回车 = 下载]
 powershell -NoProfile -ExecutionPolicy Bypass -Command "$d=Read-Host '  请输入'; if ($d -match '^\s*[Nn]') { exit 1 } else { exit 0 }"
 if errorlevel 1 (
     echo   [跳过] 不下载，仅设置快捷方式图标。
