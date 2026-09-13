@@ -28,7 +28,7 @@
 | 构建工具 | `mingw32-make` / `make`（可选） |
 | 网络 | 已连接到校园网（未认证状态） |
 
-> **只想使用的用户无需安装任何编译器** —— 直接使用 [`release` 分支](#-免编译发行版release-分支)（或 GitHub Releases 中的成品）即可。
+> **只想使用的用户无需安装任何编译器** —— 直接使用 [`prebuilt` 分支](#-免编译发行版prebuilt-分支)（或 GitHub Releases 中的成品）即可。
 > `main` 分支面向开发者，编译需要 MinGW-w64 或 MSVC。
 
 ---
@@ -39,12 +39,12 @@
 
 **不需要任何编译环境**：
 
-1. 切换到 [`release` 分支](https://github.com/xiao2025666/CCSU-Campus-Network-Login/tree/release)（或下载该分支的 ZIP）。
+1. 切换到 [`prebuilt` 分支](https://github.com/xiao2025666/CCSU-Campus-Network-Login/tree/prebuilt)（或下载该分支的 ZIP）。
 2. 双击运行 **`setup_first_login.bat`**。
 3. 按提示输入 **学号 / 密码 / 运营商后缀**（密码输入时不显示）。
 4. 完成！桌面会生成带图标的「校园网一键登录」快捷方式，双击即可联网。
 
-> `release` 分支中已带有编译好的 `drcom_login.exe`，脚本会**自动跳过编译**，无需 gcc / windres。
+> `prebuilt` 分支中已带有编译好的 `drcom_login.exe`，脚本会**自动跳过编译**，无需 gcc / windres。
 
 ### 方式一：一键配置（源码用户，main 分支）
 
@@ -76,18 +76,18 @@
 
 ---
 
-## 📦 免编译发行版（`release` 分支）
+## 📦 免编译发行版（`prebuilt` 分支）
 
 为方便**没有编译环境**的用户，把「开箱即用」的成品放在单独的分支上：
 
 | 分支 | 内容 | 面向 |
 | --- | --- | --- |
 | `main` | 源码（`src/`、`include/`、`Makefile`、README…） | 开发者 |
-| `release` | 预编译的 `drcom_login.exe`（已含图标）+ 配置脚本 + 图标 | 普通用户 |
+| `prebuilt` | 预编译的 `drcom_login.exe`（已含图标）+ 配置脚本 + 图标 | 普通用户 |
 
 使用步骤：
 
-1. 打开 [release 分支](https://github.com/xiao2025666/CCSU-Campus-Network-Login/tree/release) → `Code` → `Download ZIP`；
+1. 打开 [prebuilt 分支](https://github.com/xiao2025666/CCSU-Campus-Network-Login/tree/prebuilt) → `Code` → `Download ZIP`；
 2. 解压后双击 `setup_first_login.bat`，按提示输入账号密码即可。
 
 > 该分支无需编译器：脚本检测到 `drcom_login.exe` 已存在，会直接跳到「创建快捷方式 + 生成配置」。
@@ -326,7 +326,7 @@ timeout /t 5 /nobreak >nul
 ```
 
 **Q7：图标没有生效 / 提示找不到编译器？**
-- 使用 [`release` 分支](#-免编译发行版release-分支)时，程序已带图标，无需编译；
+- 使用 [`prebuilt` 分支](#-免编译发行版prebuilt-分支)时，程序已带图标，无需编译；
 - `main` 分支下嵌入图标需要编译器：脚本会优先使用**内置精简工具链**，其次用系统 `gcc`，都没有时才询问是否从 Releases 下载；
 - 即使全部跳过，脚本仍会创建**带图标的桌面快捷方式**，日常使用不受影响。
 
