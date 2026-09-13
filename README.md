@@ -135,6 +135,9 @@ CCSU-Campus-Network-Login/
 > 不能用于编译其它 C/C++ 项目。
 
 ```bat
+rem 关键: 先把工具链的 bin 加入 PATH，否则 gcc 找不到 as.exe / ld.exe
+set "PATH=%~dp0mingw64-mini-非完整编译器\bin;%PATH%"
+
 mingw64-mini-非完整编译器\bin\windres.exe drcom_login.rc -O coff -o drcom_login.res
 mingw64-mini-非完整编译器\bin\gcc.exe -O2 -Wall -Iinclude src\config_reader.c src\login.c src\main.c src\network.c src\utils.c drcom_login.res -o drcom_login.exe -lws2_32 -finput-charset=UTF-8 -fexec-charset=GBK
 ```
